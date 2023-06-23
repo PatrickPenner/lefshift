@@ -1,0 +1,9 @@
+[MESSAGES CONTROL]
+
+# formatting is done differently
+disable=C0301
+
+[TYPECHECK]
+
+# pylint does not find RDKit members for various reasons
+ignored-modules=rdkit
