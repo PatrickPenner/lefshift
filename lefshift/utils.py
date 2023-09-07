@@ -340,12 +340,14 @@ def calculate_fingerprints(input_data, smiles_column_name, path_length=LEFFinger
     :rtype: pd.DataFrame
     """
     mol_fps = []
-    for _, row in input_data.iterrows():
+    for index, row in input_data.iterrows():
         mol = Chem.MolFromSmiles(row[smiles_column_name])
         if not mol:
             raise RuntimeError("Could not generate molecule from SMILES")
         if mol.GetAtomWithIdx(int(row[constants.ATOM_INDEX_COLUMN])).GetSymbol() != "F":
-            raise RuntimeError("Atom at index is not a fluorine atom")
+            raise RuntimeError(
+                f'Atom at index {row[constants.ATOM_INDEX_COLUMN]} in row with ID "{row[constants.ID_COLUMN]}" is not a fluorine atom'
+            )
         fps, bit_info = LEFFingerprint.generate_with_info(
             mol, from_atoms=[[row["Atom Index"]]], path_length=path_length
         )
