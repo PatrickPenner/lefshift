@@ -70,9 +70,9 @@ Shieldings can be converted to shift with a calibration data set in the
 following way:
 ```
 sed -i 's/ID,/Catalog ID,/' unknown_shieldings.csv  # rename the ID column to make it consistent with the input data
-lefqm shifts unknown_shieldings.csv --calibration calibration_data.csv unknown_shifts.csv
+lefqm shifts unknown_shieldings.csv --calibration data/train.csv unknown_shifts.csv --id-column 'Catalog ID' --shift-column 'Shift 1 (ppm)'
 ```
-The `calibration_data.csv` must contain a shieldings constants column as well
+The calibration data set must contain a shieldings constants column as well
 as a chemical shift column to train the linear regression conversion from
 shieldings constants to chemical shifts. The file `unknown_shfits.csv` now
 contains QM-derived chemical shifts for as many of the molecules from
@@ -84,24 +84,23 @@ We can now go back into ML with the QM-derived chemical shifts. We will start
 by combining `unknown.csv` and `unknown_shifts.csv` together in a format that
 mirrors our training data. On the commandline this can look like this:
 ```
-cut -d',' -f1 unknown_shifts.csv | while read line; do grep "$line" unknown.csv; done | cut -d':' -f 2 > unknown_processed.csv  # get all the input for molecules that could be processed
-paste -d',' <(cut -d',' -f-10 unknown_processed.csv) <(cut -d',' -f5 unknown_shifts.csv) <(cut -d',' -f12- unknown_processed.csv) > unknown_training.csv  # replace true chemical shift column in input with QM-derived shifts
+cut -d',' -f1 unknown_shifts.csv | while read line; do grep "$line" data/unknown.csv; done | cut -d':' -f 2 > unknown_processed.csv  # get all the input for molecules that could be processed
 paste -d',' <(cut -d',' -f-10 unknown_processed.csv) <(cut -d',' -f5 unknown_shifts.csv) <(cut -d',' -f12- unknown_processed.csv) <(cut -d',' -f4 unknown_shifts.csv)> unknown_training.csv  # replace true chemical shift column in input with QM-derived shifts
 ```
 It is probably simpler to do this in the visual spreadsheet editor of your
 choice. The commands above also appended the shieldings column for consistency,
 but we will not be using it for ML training.
 
-Now we can combine `unknown_training.csv` with the `train_shieldings.csv`:
+Now we can combine `unknown_training.csv` with the `train.csv`:
 ```
-cp train_shieldings.csv qm_assisted_train_shieldings.csv
+cp data/train.csv qm_assisted_train_shieldings.csv
 grep -v 'Catalog ID' unknown_training.csv >> qm_assisted_train_shieldings.csv  # do not add the header again
 ```
 
 The file `qm_assisted_train_shieldings.csv` can now be used to train a model
 with QM-derived data and repredict our original input:
 ```
-lef train qm_assisted_train_shieldings.csv --model qm_assisted_model --id-column 'Catalog ID' --shift-column 'Shift 1 (ppm)' --verbose
-lef predict test.csv --model qm_assisted_model test_qm_assisted_predicted.csv --similarities test_qm_assisted_similarities.csv --verbose
+lefshift train qm_assisted_train_shieldings.csv --model models/qm_assisted_model --id-column 'Catalog ID' --shift-column 'Shift 1 (ppm)' --verbose
+lefshift predict data/test.csv --model models/qm_assisted_model data/test_qm_assisted_predicted.csv --similarities data/test_qm_assisted_similarities.csv --verbose
 ```
 The prediction for a few molecules, such as "Z1481144763", has improved.
