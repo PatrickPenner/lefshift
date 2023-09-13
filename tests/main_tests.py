@@ -38,8 +38,8 @@ class MainTests(unittest.TestCase):
             similarities = pd.read_csv(similarities_path)
             test_data = pd.read_csv(input_path)
             self.assertEqual(len(output), len(test_data))
-            self.assertEqual(len(test_data.columns) + 6, len(output.columns))
-            self.assertEqual(len(test_data.columns) + 6, len(similarities.columns))
+            self.assertEqual(len(test_data.columns) + 4, len(output.columns))
+            self.assertEqual(len(test_data.columns) + 4, len(similarities.columns))
 
     def test_train(self):
         """Test training"""
@@ -58,7 +58,7 @@ class MainTests(unittest.TestCase):
                     "--model",
                     str(model_path),
                     "--id-column",
-                    "Catalog ID",
+                    "ID",
                     "--smiles-column",
                     "SMILES",
                     "--shift-column",
@@ -95,4 +95,5 @@ class MainTests(unittest.TestCase):
             known = pd.read_csv(known_path)
             unknown = pd.read_csv(unknown_path)
             self.assertEqual(len(known), 3)
-            self.assertEqual(len(unknown), 0)
+            # 2 fluorines from the ChEMBL compound are unknown
+            self.assertEqual(len(unknown), 2)

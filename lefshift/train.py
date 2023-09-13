@@ -7,7 +7,7 @@ from pathlib import Path
 import pandas as pd
 
 from lefshift import constants, utils
-from lefshift.application_utils import validate_training_input
+from lefshift.application_utils import validate_training_input, validate_column
 from lefshift.model import FluorineModel
 
 
@@ -73,6 +73,8 @@ def train(args):
 
     logging.info("Calculating descriptors")
     if "Label" in training_data_df.columns and "Atom Index" in training_data_df.columns:
+        training_data_df = validate_column(training_data_df, "Label", str)
+        training_data_df = validate_column(training_data_df, "Atom Index", int)
         training_data_df = training_data_df.join(
             utils.calculate_fingerprints(training_data_df, args.smiles_column)
         )

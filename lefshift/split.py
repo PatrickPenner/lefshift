@@ -55,6 +55,8 @@ def split(args):
 
     logging.info("Calculating descriptors")
     if "Label" in input_df.columns and "Atom Index" in input_df.columns:
+        input_df = validate_column(input_df, "Label", str)
+        input_df = validate_column(input_df, "Atom Index", int)
         descriptors = input_df.join(utils.calculate_fingerprints(input_df, args.smiles_column))
     else:
         descriptors = input_df.join(

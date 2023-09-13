@@ -162,6 +162,7 @@ def predict(args):
         input_df = input_df.join(
             utils.smiles_calculate_descriptors(input_df[args.smiles_column].values)
         )
+    input_df = input_df.reset_index(drop=True)
 
     output = []
     similarities = []

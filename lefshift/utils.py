@@ -4,7 +4,7 @@ import re
 import numpy as np
 import pandas as pd
 from rdkit import Chem
-from rdkit.Chem import rdFMCS
+from rdkit.Chem import rdFMCS, SmilesParserParams
 from rdkit.Chem.rdchem import ChiralType
 from rdkit.DataStructs import BulkDiceSimilarity
 
@@ -34,7 +34,9 @@ def smiles_nof_unique_fingerprints(smiles):
     :return: number of unique LEF fingerprints
     :rtype: int
     """
-    mol = Chem.MolFromSmiles(smiles)
+    params = SmilesParserParams()
+    params.removeHs = False
+    mol = Chem.MolFromSmiles(smiles, params)
     return nof_unique_fingerprints(mol)
 
 
@@ -322,7 +324,9 @@ def smiles_calculate_descriptors(smiles, path_length=LEFFingerprint.LEF_FPL):
     :return: data frame of descriptors
     :rtype: pd.DataFrame
     """
-    mols = [Chem.MolFromSmiles(smile) for smile in smiles]
+    params = SmilesParserParams()
+    params.removeHs = False
+    mols = [Chem.MolFromSmiles(smile, params) for smile in smiles]
     return calculate_descriptors(mols, path_length=path_length)
 
 
@@ -339,9 +343,11 @@ def calculate_fingerprints(input_data, smiles_column_name, path_length=LEFFinger
     :return: data frame of molecules and fingerprints
     :rtype: pd.DataFrame
     """
+    params = SmilesParserParams()
+    params.removeHs = False
     mol_fps = []
-    for index, row in input_data.iterrows():
-        mol = Chem.MolFromSmiles(row[smiles_column_name])
+    for _, row in input_data.iterrows():
+        mol = Chem.MolFromSmiles(row[smiles_column_name], params)
         if not mol:
             raise RuntimeError("Could not generate molecule from SMILES")
         if mol.GetAtomWithIdx(int(row[constants.ATOM_INDEX_COLUMN])).GetSymbol() != "F":

@@ -91,6 +91,12 @@ class UtilsTests(unittest.TestCase):
         descriptors = utils.smiles_calculate_descriptors(smiles)
         self.assertEqual(len(descriptors), 4)
 
+        # ensure descriptor calculation does not strip hydrogens
+        smiles = ["[H]C([H])(F)C(=O)O CHEMBL509273"]
+        descriptors = utils.smiles_calculate_descriptors(smiles)
+        # 2 hydrogens and one carbon are in front of the fluorine
+        self.assertEqual(descriptors["Atom Index"].values[0], 3)
+
     def test_string_to_list(self):
         """Test string to list conversion"""
         test_list = ["a", "b", "c"]
