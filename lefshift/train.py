@@ -98,8 +98,12 @@ def train(args):
     if args.parameters is not None and Path(args.parameters).exists():
         with open(args.parameters, encoding="utf8") as args_file:
             loaded_parameters = json.load(args_file)
-        if all(label in loaded_parameters for label in constants.CF_LABELS):
-            parameters = loaded_parameters
+        for cf_label in constants.CF_LABELS:
+            if cf_label not in loaded_parameters:
+                continue
+
+            logging.info("Setting %s parametrs", cf_label)
+            parameters[cf_label] = loaded_parameters[cf_label]
 
     models = []
     for cf_label in constants.CF_LABELS:

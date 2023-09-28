@@ -1,4 +1,5 @@
 """Fluorine chemical shift prediction model"""
+import json
 import logging
 from pathlib import Path
 
@@ -290,3 +291,9 @@ class FluorineModel:
                 columns=[constants.BOUNDS_COLUMN, constants.INTERVAL_COLUMN],
             )
             bounds_df.to_csv(model_path / (self.label + "_bounds.csv"), index=False)
+
+        if self.parameters is not None:
+            with open(
+                model_path / (self.label + "_parameters.json"), "w", encoding="utf8"
+            ) as parameter_file:
+                json.dump({self.label: self.parameters}, parameter_file)

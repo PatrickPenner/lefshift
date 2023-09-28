@@ -73,6 +73,7 @@ class MainTests(unittest.TestCase):
             self.assertTrue(model_path.exists())
             self.assertEqual(len(list(model_path.glob("*.bin"))), 3)
             self.assertEqual(len(list(model_path.glob("*.csv"))), 3)
+            self.assertEqual(len(list(model_path.glob("*.json"))), 3)
 
     def test_split(self):
         """Test splitting"""
