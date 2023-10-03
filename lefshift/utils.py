@@ -330,7 +330,7 @@ def smiles_calculate_descriptors(smiles, path_length=LEFFingerprint.LEF_FPL):
     return calculate_descriptors(mols, path_length=path_length)
 
 
-def calculate_fingerprints(input_data, smiles_column_name, path_length=LEFFingerprint.LEF_FPL):
+def calculate_fingerprints(input_data, smiles_column, path_length=LEFFingerprint.LEF_FPL):
     """Calculate fingerprints for input data
 
     Calculate fingerprints for input data. The input data must contain
@@ -338,8 +338,8 @@ def calculate_fingerprints(input_data, smiles_column_name, path_length=LEFFinger
 
     :param input_data: input data to calculate fingerprints for
     :type input_data: pd.DataFrame
-    :param smiles_column_name: name of the SMILES column
-    :type smiles_column_name: str
+    :param smiles_column: name of the SMILES column
+    :type smiles_column: str
     :return: data frame of molecules and fingerprints
     :rtype: pd.DataFrame
     """
@@ -347,7 +347,7 @@ def calculate_fingerprints(input_data, smiles_column_name, path_length=LEFFinger
     params.removeHs = False
     mol_fps = []
     for _, row in input_data.iterrows():
-        mol = Chem.MolFromSmiles(row[smiles_column_name], params)
+        mol = Chem.MolFromSmiles(row[smiles_column], params)
         if not mol:
             raise RuntimeError("Could not generate molecule from SMILES")
         if mol.GetAtomWithIdx(int(row[constants.ATOM_INDEX_COLUMN])).GetSymbol() != "F":
@@ -362,6 +362,77 @@ def calculate_fingerprints(input_data, smiles_column_name, path_length=LEFFinger
     return pd.DataFrame(
         mol_fps, columns=[constants.MOL_COLUMN, constants.FP_COLUMN, constants.FP_INFO_COLUMN]
     )
+
+
+def filter_by_descriptor(input_data, column_name, calculated_name):
+    """Filter by a descriptor
+
+    Requires an input column containing the descriptor and the calculated
+    descriptor. If the input descriptor of a row is empty no records are
+    filtered out.
+
+    :param input_data: input data to filter
+    :type input_data: pd.DataFrame
+    :param column_name: name of the column containing the descriptor
+    :type column_name: str
+    :param calculated_name: name of the column containing the calculated descriptor
+    :type calculated_name: str
+    :return: filtered data with empty values replaced
+    :rtype: pd.DataFrame
+    """
+    comparison_column = calculated_name
+    if column_name == calculated_name:
+        comparison_column += " Descriptors"
+    input_data = input_data[
+        input_data[column_name].isna() | (input_data[column_name] == input_data[comparison_column])
+    ]
+    if input_data[column_name].hasnans:
+        input_data = input_data.assign(**{column_name: input_data[comparison_column].values})
+    input_data = input_data.drop(comparison_column, axis="columns")
+    return input_data
+
+
+def generate_descriptors(
+    input_data,
+    smiles_column=constants.SMILES_COLUMN,
+    id_column=constants.ID_COLUMN,
+    label_column=constants.LABEL_COLUMN,
+    atom_index_column=constants.ATOM_INDEX_COLUMN,
+):
+    """Generate normalized descriptors
+
+    Handles full and partial specification of fluorine motifs with labels and
+    atom indexes. Will overwrite partially specified values with the fully
+    specified values from descriptor calculation.
+
+    :param input_data: input data to calculate fingerprints for
+    :type input_data: pd.DataFrame
+    :param smiles_column: name of the SMILES column
+    :type smiles_column str
+    :param id_column: name of the ID column
+    :type id_column str
+    :param label_column: name of the label column
+    :type label_column str
+    :param atom_index_column: name of the atom index column
+    :type atom_index_column str
+    :return: input data with descriptors
+    :rtype: pd.DataFrame
+    """
+    smiles = input_data[smiles_column].values
+    if id_column in input_data:
+        smiles += " " + input_data[id_column].values  # name the smiles
+    input_data = input_data.join(
+        smiles_calculate_descriptors(smiles),
+        rsuffix=" Descriptors",
+    )
+    if label_column in input_data.columns:
+        input_data = filter_by_descriptor(input_data, label_column, constants.LABEL_COLUMN)
+
+    if atom_index_column in input_data.columns:
+        input_data = filter_by_descriptor(
+            input_data, atom_index_column, constants.ATOM_INDEX_COLUMN
+        )
+    return input_data
 
 
 def string_to_list(list_string):

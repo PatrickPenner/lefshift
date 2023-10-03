@@ -7,7 +7,7 @@ from pathlib import Path
 import pandas as pd
 
 from lefshift import constants, utils
-from lefshift.application_utils import validate_training_input, validate_column
+from lefshift.application_utils import validate_training_input
 from lefshift.model import FluorineModel
 
 
@@ -24,6 +24,7 @@ def add_train_subparser(subparsers):
         "--model",
         help="path to the directory of the model",
         type=Path,
+        required=True,
     )
     train_parser.add_argument(
         "--shift-column",
@@ -41,6 +42,18 @@ def add_train_subparser(subparsers):
         "--smiles-column",
         help="name of the column containing the molecule SMILES",
         default=constants.SMILES_COLUMN,
+        type=str,
+    )
+    train_parser.add_argument(
+        "--label-column",
+        help="name of the column containing the CF/CF2/CF3 label",
+        default=constants.LABEL_COLUMN,
+        type=str,
+    )
+    train_parser.add_argument(
+        "--atom-index-column",
+        help="name of the column containing the atom index",
+        default=constants.ATOM_INDEX_COLUMN,
         type=str,
     )
     train_parser.add_argument(
@@ -70,29 +83,19 @@ def train(args):
         training_data_df, args.id_column, args.smiles_column, args.shift_column
     )
     prepare_model_directory(args.model)
-
     logging.info("Calculating descriptors")
-    if "Label" in training_data_df.columns and "Atom Index" in training_data_df.columns:
-        training_data_df = validate_column(training_data_df, "Label", str)
-        training_data_df = validate_column(training_data_df, "Atom Index", int)
-        training_data_df = training_data_df.join(
-            utils.calculate_fingerprints(training_data_df, args.smiles_column)
+    training_data_df = utils.generate_descriptors(
+        training_data_df,
+        smiles_column=args.smiles_column,
+        id_column=args.id_column,
+        label_column=args.label_column,
+        atom_index_column=args.atom_index_column,
+    )
+    if len(training_data_df) - 1 != max(training_data_df.index):
+        raise RuntimeError(
+            "Training data contains molecules with different fluorines "
+            "but the same chemical shift annotation"
         )
-    else:
-        training_data_df = training_data_df.join(
-            utils.smiles_calculate_descriptors(
-                training_data_df[args.smiles_column].values
-                + " "
-                + training_data_df[args.id_column].values  # name the smiles
-            )
-        )
-        for mol in training_data_df[constants.MOL_COLUMN].values:
-            # ensure training data only contains molecules with equivalent fluorines
-            if utils.nof_unique_fingerprints(mol) != 1:
-                raise RuntimeError(
-                    "Training data contains molecules with different fluorines "
-                    "but the same chemical shift annotation"
-                )
 
     parameters = constants.PARAMETERS
     if args.parameters is not None and Path(args.parameters).exists():

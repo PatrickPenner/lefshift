@@ -47,6 +47,18 @@ def add_predict_subparser(subparsers):
         default=constants.SMILES_COLUMN,
         type=str,
     )
+    predict_parser.add_argument(
+        "--label-column",
+        help="name of the column containing the CF/CF2/CF3 label",
+        default=constants.LABEL_COLUMN,
+        type=str,
+    )
+    predict_parser.add_argument(
+        "--atom-index-column",
+        help="name of the column containing the atom index",
+        default=constants.ATOM_INDEX_COLUMN,
+        type=str,
+    )
     predict_parser.add_argument("-v", "--verbose", help="show verbose output", action="store_true")
 
 
@@ -156,12 +168,12 @@ def predict(args):
     )
 
     logging.info("Calculating descriptors")
-    if "Label" in input_df.columns and "Atom Index" in input_df.columns:
-        input_df = input_df.join(utils.calculate_fingerprints(input_df, args.smiles_column))
-    else:
-        input_df = input_df.join(
-            utils.smiles_calculate_descriptors(input_df[args.smiles_column].values)
-        )
+    input_df = utils.generate_descriptors(
+        input_df,
+        smiles_column=args.smiles_column,
+        label_column=args.label_column,
+        atom_index_column=args.atom_index_column,
+    )
     input_df = input_df.reset_index(drop=True)
 
     output = []

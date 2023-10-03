@@ -1,6 +1,7 @@
 """Test utils"""
 import unittest
 
+import pandas as pd
 from rdkit import Chem
 from rdkit.Chem.EnumerateStereoisomers import EnumerateStereoisomers
 
@@ -96,6 +97,14 @@ class UtilsTests(unittest.TestCase):
         descriptors = utils.smiles_calculate_descriptors(smiles)
         # 2 hydrogens and one carbon are in front of the fluorine
         self.assertEqual(descriptors["Atom Index"].values[0], 3)
+
+    def test_generate_descriptors(self):
+        """Test descriptor generation"""
+        input_data = pd.read_csv("tests/data/test_data.csv")
+        input_data_descriptors = utils.generate_descriptors(input_data)
+        self.assertEqual(len(input_data), len(input_data_descriptors))
+        self.assertFalse(input_data_descriptors["Label"].hasnans)
+        self.assertFalse(input_data_descriptors["Atom Index"].hasnans)
 
     def test_string_to_list(self):
         """Test string to list conversion"""
