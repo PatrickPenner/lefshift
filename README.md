@@ -2,7 +2,12 @@
 
 ## Getting Started
 
-You can clone the repo manually and then install the lefshift package:
+A PyPi package is available:
+```
+pip install lefshift
+```
+
+You can also clone the repo manually and then install the lefshift package:
 ```
 git clone https://github.com/PatrickPenner/lefshift.git
 cd lefshift

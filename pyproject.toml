@@ -6,9 +6,17 @@ build-backend = "setuptools.build_meta"
 name = "lefshift"
 version = "0.5.1"
 authors = [
-    {name = "Patrick Penner"},
+    {name = "Patrick Penner", email = "patrick@ppenner.com"},
 ]
+description = "Predict 19F chemical shift"
+readme = "README.md"
 requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+]
 dependencies = [
    "numpy>=1.23.5",
    "pandas>=1.5.2",
@@ -19,6 +27,10 @@ dependencies = [
 
 [project.scripts]
 lefshift = "lefshift.__main__:main"
+
+[project.urls]
+Homepage = "https://github.com/PatrickPenner/lefshift"
+Issues = "https://github.com/PatrickPenner/lefshift/issues"
 
 [tool.setuptools]
 packages = ["lefshift"]
