@@ -421,14 +421,20 @@ def generate_descriptors(
     smiles = input_data[smiles_column].values
     if id_column in input_data:
         smiles += " " + input_data[id_column].values  # name the smiles
+    suffix = " Descriptors"
     input_data = input_data.join(
         smiles_calculate_descriptors(smiles),
-        rsuffix=" Descriptors",
+        rsuffix=suffix,
     )
-    if label_column in input_data.columns:
+    if (constants.LABEL_COLUMN + suffix in input_data.columns) or (
+        constants.LABEL_COLUMN != label_column and constants.LABEL_COLUMN in input_data.columns
+    ):
         input_data = filter_by_descriptor(input_data, label_column, constants.LABEL_COLUMN)
 
-    if atom_index_column in input_data.columns:
+    if (constants.ATOM_INDEX_COLUMN + suffix in input_data.columns) or (
+        constants.ATOM_INDEX_COLUMN != atom_index_column
+        and constants.ATOM_INDEX_COLUMN in input_data.columns
+    ):
         input_data = filter_by_descriptor(
             input_data, atom_index_column, constants.ATOM_INDEX_COLUMN
         )

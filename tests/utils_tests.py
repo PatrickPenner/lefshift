@@ -106,6 +106,12 @@ class UtilsTests(unittest.TestCase):
         self.assertFalse(input_data_descriptors["Label"].hasnans)
         self.assertFalse(input_data_descriptors["Atom Index"].hasnans)
 
+        input_data = pd.read_csv("tests/data/test_data_custom_columns.csv")
+        input_data_descriptors = utils.generate_descriptors(input_data, label_column="My Label")
+        self.assertEqual(len(input_data), len(input_data_descriptors))
+        self.assertFalse(input_data_descriptors["My Label"].hasnans)
+        self.assertFalse(input_data_descriptors["Atom Index"].hasnans)
+
     def test_string_to_list(self):
         """Test string to list conversion"""
         test_list = ["a", "b", "c"]
