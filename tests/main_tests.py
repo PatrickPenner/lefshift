@@ -71,9 +71,9 @@ class MainTests(unittest.TestCase):
             )
             call_subtool(args)
             self.assertTrue(model_path.exists())
-            self.assertEqual(len(list(model_path.glob("*.bin"))), 3)
             self.assertEqual(len(list(model_path.glob("*.csv"))), 3)
-            self.assertEqual(len(list(model_path.glob("*.json"))), 3)
+            # 3 parameter files, 3 model files
+            self.assertEqual(len(list(model_path.glob("*.json"))), 6)
 
     def test_split(self):
         """Test splitting"""

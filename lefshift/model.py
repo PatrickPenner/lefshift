@@ -176,7 +176,7 @@ class FluorineModel:
         """
         if self.model_dir is not None:
             logging.info('Loading model from "%s" with label "%s"', self.model_dir, self.label)
-            model_path = Path(self.model_dir) / (self.label + ".bin")
+            model_path = Path(self.model_dir) / (self.label + ".json")
             if not model_path.exists():
                 # is an exception because it is program critical
                 raise RuntimeError(f'Could not find model "{model_path}"')
@@ -271,7 +271,7 @@ class FluorineModel:
         if not model_path.exists():
             raise RuntimeError(f'Could not find directory "{model_dir}"')
 
-        self.model.save_model(model_path / (self.label + ".bin"))
+        self.model.save_model(model_path / (self.label + ".json"))
 
         # only save relevant data
         self.data = self.data[

@@ -1,0 +1,1 @@
+{"CF2": {"colsample_bynode": 0.5, "learning_rate": 0.1, "n_estimators": 1000, "nthread": 8}}
